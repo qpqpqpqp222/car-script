@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌍 Car Parking Script - World's Best Menu</title>
+    <style>
+        /* ===== グローバルスタイル ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* ===== メインコンテナ ===== */
+        #page-container {
+            position: fixed;
+            right: 5px;
+            top: 5px;
+            z-index: 10000;
+            transform: scale(0.75);
+            transform-origin: top right;
+            transition: transform 0.2s ease;
+            max-width: 400px;
+            background: rgba(10, 14, 39, 0.95);
+            border-radius: 12px;
+            border: 2px solid #1a6dd6;
+            box-shadow: 0 8px 32px rgba(26, 109, 214, 0.3);
+            padding: 10px;
+        }
+
+        /* ===== ページコンテナ ===== */
+        #page1-container, #page2-container, #page3-container, #page4-container, #page5-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            margin: 0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        #page2-container, #page3-container, #page4-container, #page5-container {
+            display: none;
+        }
+
+        /* ===== ページ切り替えボタン ===== */
+        #page-switch-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f2454 100%);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        #page-switch-container button {
+            flex: 1;
+            min-width: 50px;
+            padding: 6px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border: 2px solid #1a6dd6;
+            background: #0f2454;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        #page-switch-container button:hover {
+            background: #1a6dd6;
+            box-shadow: 0 4px 15px rgba(26, 109, 214, 0.5);
+        }
+
+        #page-switch-container button:disabled {
+            background: #1a6dd6;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        /* ===== 行スタイル ===== */
+        #page1-container > div, 
+        #page2-container > div,
+        #page3-container > div.page-row,
+        #page4-container > div.page-row,
+        #page5-container > div.page-row {
+            background: linear-gradient(135deg, rgba(26, 109, 214, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+            border: 1px solid rgba(26, 109, 214, 0.3);
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 5px;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        #page1-container > div:hover,
+        #page2-container > div:hover,
+        #page3-container > div.page-row:hover,
+        #page4-container > div.page-row:hover,
+        #page5-container > div.page-row:hover {
+            background: linear-gradient(135deg, rgba(26, 109, 214, 0.2) 0%, rgba(0, 212, 255, 0.1) 100%);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(26, 109, 214, 0.3);
+        }
+
+        /* ===== ラベルスタイル ===== */
+        #slider-label, #rotation-label {
+            color: #00d4ff;
+            font-weight: 700;
+            font-size: 10px;
+            white-space: nowrap;
+            text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+        }
+
+        #zoom-container #zoom-value,
+        #extra-rotation-value {
+            color: #00d4ff;
+            font-weight: 700;
+            font-size: 10px;
+            margin-left: 5px;
+            white-space: nowrap;
+            text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+        }
+
+        /* ===== スライダースタイル ===== */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 70px;
+            height: 4px;
+            background: linear-gradient(90deg, #1a6dd6, #00d4ff);
+            border-radius: 5px;
+            outline: 0;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00d4ff;
+            border: 2px solid #1a6dd6;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        }
+
+        /* ===== ボタンスタイル ===== */
+        button {
+            padding: 6px 10px;
+            border: 2px solid #1a6dd6;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #1a6dd6 0%, #0f2454 100%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 9px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            margin-left: 3px;
+        }
+
+        button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #00d4ff 0%, #1a6dd6 100%);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+            border-color: #00d4ff;
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #555 0%, #333 100%);
+            border-color: #888;
+            cursor: default;
+            opacity: 0.6;
+        }
+
+        #zoom-container button {
+            font-size: 14px;
+            font-weight: 900;
+            width: 30px;
+            padding: 4px;
+        }
+
+        /* ===== トグルスイッチ ===== */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 25px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #1a6dd6, #0f2454);
+            transition: 0.4s;
+            border-radius: 25px;
+            border: 2px solid #1a6dd6;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background: #00d4ff;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0, 212, 255, 0.6);
+        }
+
+        input:checked + .slider-toggle {
+            background: linear-gradient(135deg, #00d4ff, #1a6dd6);
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(18px);
+        }
+
+        /* ===== メモ帳 ===== */
+        #memo-display-area {
+            background: linear-gradient(135deg, rgba(26, 109, 214, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+            border: 1px solid rgba(26, 109, 214, 0.3);
+            padding: 8px;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #dcdcdc;
+            font-size: 10px;
+            line-height: 1.4;
+            user-select: text;
+            margin-top: 5px;
+            margin-bottom: 3px;
+        }
+
+        .memo-item {
+            padding: 4px 0;
+            border-bottom: 1px dotted rgba(0, 212, 255, 0.3);
+            word-wrap: break-word;
+            color: #00d4ff;
+        }
+
+        .memo-item:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== 座標移動パッド ===== */
+        .directional-pad {
+            display: inline-block;
+            padding: 4px;
+        }
+
+        .dir-row {
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .dir-btn {
+            width: 24px;
+            height: 20px;
+            padding: 0 !important;
+            margin: 1px !important;
+            font-size: 8px !important;
+        }
+
+        .dir-placeholder {
+            width: 24px;
+            height: 20px;
+            margin: 1px;
+        }
+
+        .vertical-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-left: 5px;
+        }
+
+        .vertical-controls button {
+            width: 28px;
+            height: 22px;
+            padding: 0 !important;
+            margin: 0 !important;
+            font-size: 10px !important;
+        }
+
+        /* ===== スクロールバー ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 109, 214, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #1a6dd6, #00d4ff);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #00d4ff, #1a6dd6);
+        }
+
+        /* ===== ページ5: ランク機能 ===== */
+        #page5-container {
+            width: 100% !important;
+        }
+
+        #page5-container input {
+            width: 100%;
+            background: rgba(15, 36, 84, 0.5);
+            border: 2px solid #1a6dd6;
+            padding: 8px;
+            color: #00d4ff;
+            font-size: 11px;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+
+        #page5-container input::placeholder {
+            color: rgba(0, 212, 255, 0.3);
+        }
+
+        #page5-status {
+            font-size: 10px;
+            text-align: center;
+            min-height: 20px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #page5-status.status-success {
+            color: #00ff00 !important;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        #page5-status.status-error {
+            color: #ff3333 !important;
+            text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+        }
+    </style>
+</head>
+<body>
+<div id="page-container">
+
+    <!-- ページ切り替えボタン -->
+    <div id="page-switch-container">
+        <button id="show-page1-btn">📊 Page 1</button>
+        <button id="show-page2-btn">🚗 Page 2</button>
+        <button id="show-page3-btn">📝 Page 3</button>
+        <button id="show-page4-btn">📍 Page 4</button>
+        <button id="show-page5-btn">👑 Page 5</button>
+    </div>
+
+    <!-- ===== PAGE 1: 詳細調整 ===== -->
+    <div id="page1-container">
+        <!-- ズーム -->
+        <div id="zoom-container">
+            <span id="slider-label">🔍 Zoom</span>
+            <button id="zoom-out-btn">−</button>
+            <button id="zoom-in-btn">+</button>
+            <span id="zoom-value">75%</span>
+        </div>
+
+        <!-- 重力スライダー -->
+        <div id="slider-container">
+            <span id="slider-label">📉 重力</span>
+            <input type="range" id="slider" min="-25" max="25" step="1" value="-10" />
+            <button id="search-btn">🔍</button>
+            <button id="gravity-reset-btn">↻</button>
+        </div>
+
+        <!-- 回転スライダー -->
+        <div id="rotation-container">
+            <span id="rotation-label">🔄 回転</span>
+            <input type="range" id="rotation-slider" min="-999" max="999" step="1" value="0" />
+            <button id="rotation-search-btn">🔍</button>
+            <button id="rotation-reset-btn">↻</button>
+        </div>
+
+        <!-- 高さスライダー -->
+        <div id="extra-rotation-container">
+            <span id="rotation-label">📏 高さ</span>
+            <input type="range" id="extra-rotation-slider" min="-200" max="100" step="1" value="-80" />
+            <span id="extra-rotation-value">-80</span>
+            <button id="extra-rotation-search-btn">🔍</button>
+            <button id="extra-rotation-up-btn">↑</button>
+            <button id="extra-rotation-down-btn">↓</button>
+            <button id="extra-rotation-reset-btn">↻</button>
+        </div>
+
+        <!-- 壁貫通・固定 -->
+        <div id="reset-container">
+            <button id="wallhack-on-btn">🧱ON</button>
+            <button id="wallhack-off-btn">🧱OFF</button>
+            <button id="clear-btn">🗑️Clear</button>
+            <button id="gettan-btn">💰ゲッ</button>
+            <div class="switch-container">
+                <label class="switch">
+                    <input type="checkbox" id="human-transparency-toggle">
+                    <span class="slider-toggle"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- りれる・ジャンプ -->
+        <div id="rileru-container">
+            <button id="chat-limit-btn">💬文字</button>
+            <button id="rileru-on-btn">りON</button>
+            <button id="rileru-off-btn">りOFF</button>
+            <button id="fixed-edit-btn">📌固定</button>
+            <button id="jump-btn">⬆️</button>
+            <button id="fall-btn">⬇️</button>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 2: 車両改造 ===== -->
+    <div id="page2-container">
+        <!-- メイン改造 -->
+        <div>
+            <button id="rocket-btn">🚀</button>
+            <button id="window-chrome-btn">窓</button>
+            <button id="chrome-btn">✨</button>
+            <button id="horsepower-btn">馬</button>
+            <button id="banless-btn">禁</button>
+            <button id="money-btn">💰</button>
+        </div>
+
+        <!-- エアサス・移植 -->
+        <div>
+            <button id="air-suspension-down-btn">⬇️</button>
+            <button id="air-suspension-up-btn">⬆️</button>
+            <button id="long-name-btn">名前</button>
+            <button id="transplant-btn">移</button>
+            <button id="transplant-check-btn">確認</button>
+        </div>
+
+        <!-- リレル・クラウン -->
+        <div>
+            <button id="rileru-create-btn">操作不能</button>
+            <button id="crown-btn">👑</button>
+            <button id="onikyan-btn">鬼キャン</button>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 3: メモ帳 ===== -->
+    <div id="page3-container">
+        <div class="page-row" style="justify-content: center;">
+            <span id="slider-label">📝 メモ</span>
+        </div>
+
+        <div id="memo-display-area">
+            <div style="text-align: center; color: rgba(0, 212, 255, 0.3);">メモを入力してください</div>
+        </div>
+
+        <div id="memo-input-container" class="page-row">
+            <input type="text" id="memo-input" placeholder="新しいメモ..." />
+            <button id="add-memo-btn">追加</button>
+            <button id="clear-memos-btn">✖️</button>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 4: 座標移動 ===== -->
+    <div id="page4-container">
+        <div class="page-row">
+            <button id="initButton" onclick="initSearch()">ON</button>
+            <button id="coordButton" onclick="storeAndTeleport()">保</button>
+            <span style="font-size:9px;color:#888;margin-left:auto;">📍座標</span>
+        </div>
+
+        <div class="page-row">
+            <span style="font-size:8px;color:#666;">🧱</span>
+            <label class="switch" style="width: 35px; height: 20px;">
+                <input type="checkbox" onclick="scriptmenu1(this)"/>
+                <span class="slider-toggle" style="border-radius: 15px;"></span>
+            </label>
+            <span style="font-size:8px;color:#666;">浮</span>
+            <label class="switch" style="width: 35px; height: 20px;">
+                <input type="checkbox" onclick="scriptmenu3(this)"/>
+                <span class="slider-toggle" style="border-radius: 15px;"></span>
+            </label>
+            <span style="font-size:8px;color:#666;">改1</span>
+            <label class="switch" style="width: 35px; height: 20px;">
+                <input type="checkbox" onclick="scriptmenu5(this)"/>
+                <span class="slider-toggle" style="border-radius: 15px;"></span>
+            </label>
+        </div>
+
+        <div class="page-row">
+            <div style="display: flex; gap: 2px;">
+                <div class="directional-pad">
+                    <div class="dir-row">
+                        <button class="dir-btn" onmousedown="startHold(NW1)" onmouseup="stopHold()">↖</button>
+                        <button class="dir-btn" onmousedown="startHold(N1)" onmouseup="stopHold()">↑</button>
+                        <button class="dir-btn" onmousedown="startHold(NE1)" onmouseup="stopHold()">↗</button>
+                    </div>
+                    <div class="dir-row">
+                        <button class="dir-btn" onmousedown="startHold(W1)" onmouseup="stopHold()">←</button>
+                        <div class="dir-placeholder"></div>
+                        <button class="dir-btn" onmousedown="startHold(E1)" onmouseup="stopHold()">→</button>
+                    </div>
+                    <div class="dir-row">
+                        <button class="dir-btn" onmousedown="startHold(SW1)" onmouseup="stopHold()">↙</button>
+                        <button class="dir-btn" onmousedown="startHold(S1)" onmouseup="stopHold()">↓</button>
+                        <button class="dir-btn" onmousedown="startHold(SE1)" onmouseup="stopHold()">↘</button>
+                    </div>
+                </div>
+                <div class="vertical-controls">
+                    <button onmousedown="startHold(U1)" onmouseup="stopHold()">▲</button>
+                    <button onmousedown="startHold(D1)" onmouseup="stopHold()">▼</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 5: ランク操作 ===== -->
+    <div id="page5-container">
+        <div class="page-row" style="flex-direction: column; gap: 8px;">
+            <h2 style="font-size: 12px; color: #00d4ff; text-align: center; margin: 5px 0;">👑 KING Rank Tool</h2>
+            <input type="email" id="email" placeholder="メールアドレス">
+            <input type="password" id="password" placeholder="パスワード">
+            <button style="width: 100%; margin-left: 0;" onclick="loginFirebase()">ログイン</button>
+            <button style="width: 100%; margin-left: 0;" onclick="kingRank()">KING設定</button>
+            <div id="page5-status"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ==================== h5gg ダミー ====================
+if (typeof h5gg === 'undefined') {
+    window['h5gg'] = {
+        'toast': (msg) => console.log('🔔', msg),
+        'clearResults': () => console.log('🗑️ Clear'),
+        'searchNumber': (v, t, s, e) => console.log(`🔍 Search: ${v} (${t})`),
+        'searchNearby': (v, t, r) => console.log(`🎯 Nearby: ${v} (${t})`),
+        'editAll': (v, t) => console.log(`✏️ Edit: ${v} (${t})`),
+        'getResults': (c) => [{address: '0x12345678'}, {address: '0x12345680'}],
+        'getResultsCount': () => 2,
+        'getValue': (a, t) => Math.floor(Math.random() * 1000).toString(),
+        'setValue': (a, v, t) => console.log(`📝 Set: ${a} = ${v} (${t})`),
+        'prompt': (t, m, ty, d) => window.prompt(m, d)
+    };
+}
+
+// ==================== ズーム機能 ====================
+const pageContainer = document.getElementById('page-container');
+const zoomInBtn = document.getElementById('zoom-in-btn');
+const zoomOutBtn = document.getElementById('zoom-out-btn');
+const zoomValueDisplay = document.getElementById('zoom-value');
+let currentZoom = 0.75;
+const ZOOM_STEP = 0.1;
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 2;
+
+function updateZoomDisplay() {
+    pageContainer.style.transform = 'scale(' + currentZoom.toFixed(2) + ')';
+    zoomValueDisplay.textContent = Math.round(currentZoom * 100) + '%';
+}
+
+zoomInBtn.addEventListener('click', () => {
+    if (currentZoom < MAX_ZOOM) {
+        currentZoom += ZOOM_STEP;
+        updateZoomDisplay();
+    }
+});
+
+zoomOutBtn.addEventListener('click', () => {
+    if (currentZoom > MIN_ZOOM) {
+        currentZoom -= ZOOM_STEP;
+        updateZoomDisplay();
+    }
+});
+
+updateZoomDisplay();
+
+// ==================== ページ切り替え ====================
+const page1 = document.getElementById('page1-container');
+const page2 = document.getElementById('page2-container');
+const page3 = document.getElementById('page3-container');
+const page4 = document.getElementById('page4-container');
+const page5 = document.getElementById('page5-container');
+
+function showPage(n) {
+    page1.style.display = page2.style.display = page3.style.display = page4.style.display = page5.style.display = 'none';
+    document.querySelectorAll('#page-switch-container button').forEach(b => b.disabled = false);
+    
+    const pages = [page1, page2, page3, page4, page5];
+    const btns = document.querySelectorAll('#page-switch-container button');
+    
+    if (pages[n - 1]) {
+        pages[n - 1].style.display = 'flex';
+        if (btns[n - 1]) btns[n - 1].disabled = true;
+    }
+}
+
+document.getElementById('show-page1-btn').addEventListener('click', () => showPage(1));
+document.getElementById('show-page2-btn').addEventListener('click', () => showPage(2));
+document.getElementById('show-page3-btn').addEventListener('click', () => showPage(3));
+document.getElementById('show-page4-btn').addEventListener('click', () => showPage(4));
+document.getElementById('show-page5-btn').addEventListener('click', () => showPage(5));
+
+showPage(1);
+
+// ==================== PAGE 1: 詳細調整 ====================
+
+const slider = document.getElementById('slider');
+const searchBtn = document.getElementById('search-btn');
+const gravityResetBtn = document.getElementById('gravity-reset-btn');
+const rotationSlider = document.getElementById('rotation-slider');
+const rotationSearchBtn = document.getElementById('rotation-search-btn');
+const rotationResetBtn = document.getElementById('rotation-reset-btn');
+const extraRotationSlider = document.getElementById('extra-rotation-slider');
+const extraRotationSearchBtn = document.getElementById('extra-rotation-search-btn');
+const extraRotationResetBtn = document.getElementById('extra-rotation-reset-btn');
+const wallhackOnBtn = document.getElementById('wallhack-on-btn');
+const wallhackOffBtn = document.getElementById('wallhack-off-btn');
+const clearBtn = document.getElementById('clear-btn');
+const rileruOnBtn = document.getElementById('rileru-on-btn');
+const rileruOffBtn = document.getElementById('rileru-off-btn');
+const gettanBtn = document.getElementById('gettan-btn');
+const fixedEditBtn = document.getElementById('fixed-edit-btn');
+const jumpBtn = document.getElementById('jump-btn');
+const fallBtn = document.getElementById('fall-btn');
+const chatLimitBtn = document.getElementById('chat-limit-btn');
+const humanTransparencyToggle = document.getElementById('human-transparency-toggle');
+const extraRotationValueDisplay = document.getElementById('extra-rotation-value');
+const extraRotationUpBtn = document.getElementById('extra-rotation-up-btn');
+const extraRotationDownBtn = document.getElementById('extra-rotation-down-btn');
+
+let searchDone = false, rotationSearchDone = false, extraRotationSearchDone = false, isEditing = false;
+
+const initialValue = -10;
+const initialSearchValue = -9.8;
+const initialRotationValue = 0;
+const initialRotationSearchValue = -8.5;
+const initialExtraRotationValue = -80;
+const initialExtraRotationSearchValue = -80;
+
+function updateExtraRotationValueDisplay() {
+    extraRotationValueDisplay.textContent = extraRotationSlider.value;
+}
+
+updateExtraRotationValueDisplay();
+
+async function handleSearchClick(btn, done, val, name) {
+    if (done) {
+        h5gg.toast?.(name + ' 済み✓');
+        return done;
+    }
+    btn.disabled = true;
+    h5gg.toast?.(`🔍 ${name} 検索中...`);
+    try {
+        await h5gg.searchNumber(val.toString(), 'F32', '0x0', '0x200000000');
+        h5gg.toast?.(`✓ ${name} 完了`);
+        return true;
+    } catch (e) {
+        h5gg.toast?.(`✗ ${name} エラー`);
+        return false;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+searchBtn.addEventListener('click', async () => {
+    searchDone = await handleSearchClick(searchBtn, searchDone, initialSearchValue, '重力');
+});
+
+gravityResetBtn.addEventListener('click', () => {
+    slider.value = initialValue;
+    if (searchDone) {
+        h5gg.editAll(initialSearchValue.toString(), 'F32');
+        h5gg.toast?.('↻ 重力 リセット');
+    }
+});
+
+rotationSearchBtn.addEventListener('click', async () => {
+    rotationSearchDone = await handleSearchClick(rotationSearchBtn, rotationSearchDone, initialRotationSearchValue, '回転');
+});
+
+rotationResetBtn.addEventListener('click', () => {
+    rotationSlider.value = initialRotationValue;
+    if (rotationSearchDone) {
+        h5gg.editAll(initialRotationSearchValue.toString(), 'F32');
+        h5gg.toast?.('↻ 回転 リセット');
+    }
+});
+
+extraRotationSearchBtn.addEventListener('click', async () => {
+    extraRotationSearchDone = await handleSearchClick(extraRotationSearchBtn, extraRotationSearchDone, initialExtraRotationSearchValue, '高さ');
+});
+
+extraRotationResetBtn.addEventListener('click', () => {
+    extraRotationSlider.value = initialExtraRotationValue;
+    updateExtraRotationValueDisplay();
+    if (extraRotationSearchDone) {
+        h5gg.editAll(initialExtraRotationSearchValue.toString(), 'F32');
+        h5gg.toast?.('↻ 高さ リセット');
+    }
+});
+
+extraRotationSlider.addEventListener('input', () => {
+    updateExtraRotationValueDisplay();
+});
+
+extraRotationUpBtn.addEventListener('click', async () => {
+    if (!extraRotationSearchDone) {
+        h5gg.toast?.('高さを先に検索してください');
+        return;
+    }
+    const newVal = parseFloat(extraRotationSlider.value) + 1;
+    if (newVal <= 100) {
+        extraRotationSlider.value = newVal;
+        updateExtraRotationValueDisplay();
+        h5gg.editAll((newVal + 0.00001).toString(), 'F32');
+        h5gg.toast?.(`⬆️ +1 = ${newVal}`);
+    }
+});
+
+extraRotationDownBtn.addEventListener('click', async () => {
+    if (!extraRotationSearchDone) {
+        h5gg.toast?.('高さを先に検索してください');
+        return;
+    }
+    const newVal = parseFloat(extraRotationSlider.value) - 1;
+    if (newVal >= -200) {
+        extraRotationSlider.value = newVal;
+        updateExtraRotationValueDisplay();
+        h5gg.editAll((newVal + 0.00001).toString(), 'F32');
+        h5gg.toast?.(`⬇️ -1 = ${newVal}`);
+    }
+});
+
+wallhackOnBtn.addEventListener('click', async () => {
+    wallhackOnBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        await h5gg.searchNearby('49', 'F32', '0x100');
+        await h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('999999999999999999', 'F32');
+        h5gg.toast?.('🧱 壁貫通 ON');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        wallhackOnBtn.disabled = false;
+    }
+});
+
+wallhackOffBtn.addEventListener('click', async () => {
+    wallhackOffBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('999999999999999999', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-10', 'F32');
+        h5gg.toast?.('🧱 壁貫通 OFF');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        wallhackOffBtn.disabled = false;
+    }
+});
+
+clearBtn.addEventListener('click', () => {
+    if (confirm('データをクリアしますか？')) {
+        searchDone = rotationSearchDone = extraRotationSearchDone = false;
+        h5gg.clearResults();
+        h5gg.toast?.('🗑️ クリア完了');
+    }
+});
+
+gettanBtn.addEventListener('click', async () => {
+    gettanBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('300', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('5000', 'F32');
+        h5gg.toast?.('💰 ゲッタン完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        gettanBtn.disabled = false;
+    }
+});
+
+jumpBtn.addEventListener('click', async () => {
+    if (!searchDone) {
+        h5gg.toast?.('重力を先に検索してください');
+        return;
+    }
+    jumpBtn.disabled = true;
+    try {
+        h5gg.editAll('15.0001', 'F32');
+        h5gg.toast?.('⬆️ ジャンプ!');
+        await new Promise(r => setTimeout(r, 500));
+        h5gg.editAll('-9999999999999999999999', 'F32');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        jumpBtn.disabled = false;
+    }
+});
+
+fallBtn.addEventListener('click', async () => {
+    if (!searchDone) {
+        h5gg.toast?.('重力を先に検索してください');
+        return;
+    }
+    fallBtn.disabled = true;
+    try {
+        h5gg.editAll('-12.0001', 'F32');
+        h5gg.toast?.('⬇️ フォール!');
+        await new Promise(r => setTimeout(r, 500));
+        h5gg.editAll('-9999999999999999999999', 'F32');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        fallBtn.disabled = false;
+    }
+});
+
+chatLimitBtn.addEventListener('click', () => {
+    chatLimitBtn.disabled = true;
+    if (confirm('チ��ットに12と入力してください')) {
+        h5gg.clearResults();
+        h5gg.searchNumber('2', 'I32', '0x0', '0x200000000');
+        if (confirm('チャットに34と入力してください')) {
+            h5gg.searchNumber('4', 'I32', '0x0', '0x200000000');
+            if (confirm('チャットに56と入力してください')) {
+                h5gg.searchNumber('6', 'I32', '0x0', '0x200000000');
+                h5gg.searchNearby('100', 'I32', '0x100');
+                h5gg.editAll('9999999999', 'I32');
+                h5gg.toast?.('💬 文字数制限解除!');
+            }
+        }
+    }
+    chatLimitBtn.disabled = false;
+});
+
+humanTransparencyToggle.addEventListener('change', (e) => {
+    const val = e.target.checked ? '99999' : '-8.5';
+    h5gg.clearResults();
+    h5gg.searchNumber(e.target.checked ? '-8.5' : '99999', 'F32', '0x0', '0x200000000');
+    h5gg.editAll(val, 'F32');
+    h5gg.toast?.('✓ 機能' + (e.target.checked ? 'ON' : 'OFF'));
+});
+
+rileruOnBtn.addEventListener('click', async () => {
+    rileruOnBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('-120', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-999', 'F32');
+        await new Promise(r => setTimeout(r, 200));
+        h5gg.clearResults();
+        await h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        await h5gg.searchNearby('49', 'F32', '0x100');
+        h5gg.editAll('999999999999999999', 'F32');
+        h5gg.toast?.('りれる ON 完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        rileruOnBtn.disabled = false;
+    }
+});
+
+rileruOffBtn.addEventListener('click', async () => {
+    rileruOffBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('-999', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-120', 'F32');
+        await new Promise(r => setTimeout(r, 200));
+        h5gg.clearResults();
+        await h5gg.searchNumber('999999999999999999', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-10', 'F32');
+        h5gg.toast?.('りれる OFF 完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        rileruOffBtn.disabled = false;
+    }
+});
+
+fixedEditBtn.addEventListener('click', () => {
+    if (!searchDone && !rotationSearchDone && !extraRotationSearchDone) {
+        h5gg.toast?.('先に検索してください');
+        return;
+    }
+    fixedEditBtn.disabled = true;
+    try {
+        h5gg.editAll('-9999999999999999999999', 'F32');
+        h5gg.toast?.('📌 固定完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        fixedEditBtn.disabled = false;
+    }
+});
+
+// ==================== PAGE 2: 車両改造 ====================
+
+const rocketBtn = document.getElementById('rocket-btn');
+const windowChromeBtn = document.getElementById('window-chrome-btn');
+const chromeBtn = document.getElementById('chrome-btn');
+const horsepowerBtn = document.getElementById('horsepower-btn');
+const banlessBtn = document.getElementById('banless-btn');
+const moneyBtn = document.getElementById('money-btn');
+const longNameBtn = document.getElementById('long-name-btn');
+const transplantBtn = document.getElementById('transplant-btn');
+const transplantCheckBtn = document.getElementById('transplant-check-btn');
+const airSuspensionDownBtn = document.getElementById('air-suspension-down-btn');
+const airSuspensionUpBtn = document.getElementById('air-suspension-up-btn');
+const rileruCreateBtn = document.getElementById('rileru-create-btn');
+const crownBtn = document.getElementById('crown-btn');
+const onikyanBtn = document.getElementById('onikyan-btn');
+
+rocketBtn.addEventListener('click', async () => {
+    rocketBtn.disabled = true;
+    try {
+        if (!confirm('L4 2.0を購入しましたか？')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('150', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('1759.999', 'F32');
+        h5gg.clearResults();
+        await h5gg.searchNumber('220', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('2300', 'F32');
+        h5gg.toast?.('🚀 ロケット完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        rocketBtn.disabled = false;
+    }
+});
+
+windowChromeBtn.addEventListener('click', async () => {
+    windowChromeBtn.disabled = true;
+    try {
+        alert('色を一番上、薄さを一番下にしてください');
+        h5gg.clearResults();
+        await h5gg.searchNumber('0.3', 'F32', '0x0', '0x200000000');
+        alert('色を変えてください');
+        h5gg.editAll('55', 'F32');
+        h5gg.toast?.('窓 メッキ完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        windowChromeBtn.disabled = false;
+    }
+});
+
+chromeBtn.addEventListener('click', async () => {
+    chromeBtn.disabled = true;
+    try {
+        if (!confirm('鏡面を1番上にしてください')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('1', 'F32', '0x0', '0x200000000');
+        if (!confirm('鏡面を1番下にしてください')) return;
+        h5gg.searchNumber('0', 'F32', '0x0', '0x200000000');
+        if (!confirm('鏡面を1番上にしてください')) return;
+        h5gg.searchNumber('1', 'F32', '0x0', '0x200000000');
+        const v = prompt('メッキ値を入力:');
+        if (v) h5gg.editAll(v, 'F32');
+        h5gg.toast?.('✨ メッキ完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        chromeBtn.disabled = false;
+    }
+});
+
+horsepowerBtn.addEventListener('click', async () => {
+    horsepowerBtn.disabled = true;
+    try {
+        const hp = prompt('現在の馬力:');
+        if (!hp) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber(hp, 'F32', '0x0', '0x200000000');
+        const newHp = prompt('新しい馬力:');
+        if (!newHp) return;
+        h5gg.editAll(newHp, 'F32');
+        h5gg.toast?.('馬 編集完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        horsepowerBtn.disabled = false;
+    }
+});
+
+banlessBtn.addEventListener('click', async () => {
+    banlessBtn.disabled = true;
+    try {
+        if (!confirm('#1購入')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('0', 'I32', '0x0', '0x200000000');
+        if (!confirm('#2購入')) return;
+        h5gg.searchNumber('1', 'I32', '0x0', '0x200000000');
+        if (!confirm('#3購入')) return;
+        h5gg.searchNumber('2', 'I32', '0x0', '0x200000000');
+        if (!confirm('#4購入')) return;
+        h5gg.searchNumber('3', 'I32', '0x0', '0x200000000');
+        h5gg.editAll('-1', 'F32');
+        h5gg.toast?.('禁 バンレス完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        banlessBtn.disabled = false;
+    }
+});
+
+moneyBtn.addEventListener('click', async () => {
+    moneyBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('40', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('50000000', 'F32');
+        h5gg.toast?.('💰 マネー完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        moneyBtn.disabled = false;
+    }
+});
+
+airSuspensionDownBtn.addEventListener('click', async () => {
+    airSuspensionDownBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('40000', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-9999999999', 'F32');
+        h5gg.toast?.('⬇️ エアサス');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        airSuspensionDownBtn.disabled = false;
+    }
+});
+
+airSuspensionUpBtn.addEventListener('click', async () => {
+    airSuspensionUpBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('-9999999999', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('40000', 'F32');
+        h5gg.toast?.('⬆️ エアサス');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        airSuspensionUpBtn.disabled = false;
+    }
+});
+
+longNameBtn.addEventListener('click', async () => {
+    longNameBtn.disabled = true;
+    try {
+        if (!confirm('3文字入力')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('3', 'I32', '0x0', '0x200000000');
+        if (!confirm('2文字追加')) return;
+        h5gg.searchNumber('5', 'I32', '0x0', '0x200000000');
+        if (!confirm('2文字追加')) return;
+        h5gg.searchNumber('7', 'I32', '0x0', '0x200000000');
+        h5gg.searchNearby('12', 'I32', '0x100');
+        h5gg.editAll('999999', 'I32');
+        h5gg.toast?.('名前 ロングネーム完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        longNameBtn.disabled = false;
+    }
+});
+
+transplantBtn.addEventListener('click', async () => {
+    transplantBtn.disabled = true;
+    try {
+        if (!confirm('#2選択')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('1', 'I32', '0x0', '0x200000000');
+        if (!confirm('#3選択')) return;
+        h5gg.searchNumber('2', 'I32', '0x0', '0x200000000');
+        if (!confirm('#4選択')) return;
+        h5gg.searchNumber('3', 'I32', '0x0', '0x200000000');
+        if (!confirm('移植先へ移動')) return;
+        const v = prompt('パーツ数値:');
+        if (v) h5gg.editAll(v, 'I32');
+        h5gg.toast?.('移 移植完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        transplantBtn.disabled = false;
+    }
+});
+
+transplantCheckBtn.addEventListener('click', async () => {
+    transplantCheckBtn.disabled = true;
+    try {
+        if (!confirm('バンパー#2選択')) return;
+        h5gg.clearResults();
+        await h5gg.searchNumber('1', 'I32', '0x0', '0x200000000');
+        if (!confirm('#3選択')) return;
+        h5gg.searchNumber('2', 'I32', '0x0', '0x200000000');
+        if (!confirm('#4選択')) return;
+        h5gg.searchNumber('3', 'I32', '0x0', '0x200000000');
+        const cnt = h5gg.getResultsCount();
+        if (cnt === 0) { alert('結果なし'); return; }
+        const res = h5gg.getResults(cnt);
+        let vals = [];
+        for (let i = 0; i < res.length; i++) {
+            vals.push(res[i].address + ': ' + h5gg.getValue(res[i].address, 'I32'));
+        }
+        alert('移植数値:\n' + vals.join('\n'));
+        h5gg.toast?.('確認 完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        transplantCheckBtn.disabled = false;
+    }
+});
+
+rileruCreateBtn.addEventListener('click', async () => {
+    rileruCreateBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        h5gg.clearResults();
+        await h5gg.searchNumber('5006313936968761344', 'I32', '0x0', '0x200000000');
+        h5gg.editAll('-90', 'I32');
+        h5gg.clearResults();
+        h5gg.toast?.('操作不能 リレル作成完了');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        rileruCreateBtn.disabled = false;
+    }
+});
+
+crownBtn.addEventListener('click', async () => {
+    crownBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        await h5gg.searchNumber('-4294967078', 'I64', '0x0', '0x200000000');
+        h5gg.editAll('-4294967079', 'I64');
+        h5gg.clearResults();
+        h5gg.toast?.('👑 クラウン解放');
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        crownBtn.disabled = false;
+    }
+});
+
+onikyanBtn.addEventListener('click', async () => {
+    onikyanBtn.disabled = true;
+    try {
+        h5gg.clearResults();
+        if (!confirm('キャンバー角を10にしてください')) return;
+        await h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        if (!confirm('キャンバー角を0にしてください')) return;
+        h5gg.searchNumber('0', 'F32', '0x0', '0x200000000');
+        if (!confirm('キャンバー角を10にしてください')) return;
+        h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        const angle = prompt('角度を入力:');
+        if (angle) {
+            h5gg.editAll(angle, 'F32');
+            h5gg.toast?.('鬼キャン: ' + angle);
+        }
+    } catch (e) {
+        h5gg.toast?.('✗ エラー');
+    } finally {
+        onikyanBtn.disabled = false;
+    }
+});
+
+// ==================== PAGE 3: メモ帳 ====================
+
+const memoInput = document.getElementById('memo-input');
+const addMemoBtn = document.getElementById('add-memo-btn');
+const clearMemosBtn = document.getElementById('clear-memos-btn');
+const memoDisplayArea = document.getElementById('memo-display-area');
+
+function addMemo() {
+    const t = memoInput.value.trim();
+    if (!t) {
+        h5gg.toast?.('メモを入力してください');
+        return;
+    }
+    if (memoDisplayArea.querySelector('div[style*="center"]')) {
+        memoDisplayArea.innerHTML = '';
+    }
+    const d = document.createElement('div');
+    d.classList.add('memo-item');
+    d.textContent = t;
+    memoDisplayArea.prepend(d);
+    memoInput.value = '';
+    memoInput.focus();
+}
+
+addMemoBtn.addEventListener('click', addMemo);
+memoInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addMemo();
+});
+clearMemosBtn.addEventListener('click', () => {
+    if (confirm('全削除しますか？')) {
+        memoDisplayArea.innerHTML = '<div style="text-align: center; color: rgba(0, 212, 255, 0.3);">メモを入力してください</div>';
+    }
+});
+
+// ==================== PAGE 4: 座標移動 ====================
+
+let holdInterval = null;
+let N1value = 0, W1value = 0, U1value = 22;
+let baseResults = [];
+let storedX = 0, storedY = 0, storedZ = 0, isCoordSaved = false;
+const moveStep = 1;
+
+function startHold(func) {
+    if (holdInterval) return;
+    holdInterval = setInterval(func, 20);
+}
+
+function stopHold() {
+    clearInterval(holdInterval);
+    holdInterval = null;
+}
+
+function initSearch() {
+    h5gg.clearResults();
+    h5gg.searchNumber('8403089831969947648', 'I64', '0x0', '0x300000000');
+    baseResults = h5gg.getResults(h5gg.getResultsCount());
+    h5gg.clearResults();
+    if (baseResults.length > 0) {
+        W1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x60, 'F32'));
+        U1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x64, 'F32'));
+        N1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x68, 'F32'));
+        document.getElementById('initButton').style.backgroundColor = '#00d4ff';
+        h5gg.toast?.('✓ 座標取得');
+    }
+}
+
+function storeAndTeleport() {
+    if (!baseResults.length) {
+        h5gg.toast?.('先にONを押してください');
+        return;
+    }
+    if (!isCoordSaved) {
+        W1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x60, 'F32'));
+        U1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x64, 'F32'));
+        N1value = Number(h5gg.getValue(Number(baseResults[0].address) + 0x68, 'F32'));
+        storedX = W1value;
+        storedY = U1value;
+        storedZ = N1value;
+        isCoordSaved = true;
+        document.getElementById('coordButton').innerText = 'TP';
+        h5gg.toast?.('💾 座標保存');
+    } else {
+        W1value = storedX;
+        U1value = storedY;
+        N1value = storedZ;
+        for (const r of baseResults) {
+            h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32');
+            h5gg.setValue(Number(r.address) + 0x64, U1value, 'F32');
+            h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32');
+        }
+        h5gg.toast?.('📍 テレポート');
+    }
+}
+
+function N1() { N1value += moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); }
+function S1() { N1value -= moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); }
+function E1() { W1value += moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); }
+function W1() { W1value -= moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); }
+function U1() { U1value += moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x64, U1value, 'F32'); }
+function D1() { U1value -= moveStep; for (const r of baseResults) h5gg.setValue(Number(r.address) + 0x64, U1value, 'F32'); }
+function NE1() { N1value += moveStep; W1value += moveStep; for (const r of baseResults) { h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); } }
+function NW1() { N1value += moveStep; W1value -= moveStep; for (const r of baseResults) { h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); } }
+function SE1() { N1value -= moveStep; W1value += moveStep; for (const r of baseResults) { h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); } }
+function SW1() { N1value -= moveStep; W1value -= moveStep; for (const r of baseResults) { h5gg.setValue(Number(r.address) + 0x68, N1value, 'F32'); h5gg.setValue(Number(r.address) + 0x60, W1value, 'F32'); } }
+
+function scriptmenu1(input) {
+    if (input.checked) {
+        h5gg.clearResults();
+        h5gg.searchNumber('-10', 'F32', '0x0', '0x200000000');
+        h5gg.searchNearby('49', 'F32', '0x100');
+        h5gg.editAll('99999.99', 'F32');
+    } else {
+        h5gg.clearResults();
+        h5gg.searchNumber('99999.99', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-10', 'F32');
+    }
+}
+
+function scriptmenu3(input) {
+    if (input.checked) {
+        h5gg.clearResults();
+        h5gg.searchNumber('-9.8', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-9999999999999999999999', 'F32');
+    } else {
+        h5gg.clearResults();
+        h5gg.searchNumber('-9999999999999999999999', 'F32', '0x0', '0x200000000');
+        h5gg.editAll('-9.8', 'F32');
+    }
+}
+
+function scriptmenu5(input) {
+    if (input.checked) {
+        h5gg.clearResults();
+        h5gg.searchNumber('8403089831969947648', 'I64', '0x0', '0x200000000');
+        const r = h5gg.getResults(h5gg.getResultsCount());
+        for (let i = 0; i < r.length; i++) h5gg.setValue(Number(r[i].address) + 0x60, -14643, 'F32');
+    } else {
+        h5gg.clearResults();
+        h5gg.searchNumber('8403089831969947648', 'I64', '0x0', '0x200000000');
+        const r = h5gg.getResults(h5gg.getResultsCount());
+        for (let i = 0; i < r.length; i++) h5gg.setValue(Number(r[i].address) + 0x60, 14643, 'F32');
+    }
+}
+
+// ==================== PAGE 5: ランク ====================
+
+let currentUser = null, currentToken = null;
+
+function updateStatus(msg, type = 'normal') {
+    const el = document.getElementById('page5-status');
+    el.textContent = msg;
+    el.className = 'status-' + type;
+}
+
+async function loginFirebase() {
+    const e = document.getElementById('email').value.trim();
+    const p = document.getElementById('password').value;
+    if (!e || !p) {
+        updateStatus('メールとパスワードを入力', 'error');
+        return;
+    }
+    updateStatus('ログイン中...');
+    try {
+        const r = await fetch('https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyBW1ZrRgrQGPTMkeqZjUbzuVbMiUeDZHYU', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: e, password: p, returnSecureToken: true })
+        });
+        const j = await r.json();
+        if (j.idToken) {
+            currentToken = j.idToken;
+            currentUser = e;
+            updateStatus('ログイン成功: ' + e, 'success');
+        } else {
+            updateStatus('ログイン失敗', 'error');
+        }
+    } catch (e) {
+        updateStatus('ネットワークエラー', 'error');
+    }
+}
+
+async function kingRank() {
+    if (!currentToken) {
+        updateStatus('先にログインしてください', 'error');
+        return;
+    }
+    updateStatus('KING設定中...');
+    const data = {
+        data: JSON.stringify({
+            RatingData: {
+                money: 999999,
+                levels: 999999,
+                coins: 999999
+            },
+            Rank: 1
+        })
+    };
+    try {
+        const r = await fetch('https://us-central1-cp-multiplayer.cloudfunctions.net/SetUserRank', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + currentToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (r.ok) {
+            updateStatus('✓ KING設定完了', 'success');
+        } else {
+            updateStatus('設定失敗', 'error');
+        }
+    } catch (e) {
+        updateStatus('通信エラー', 'error');
+    }
+}
+</script>
+</body>
+</html>
